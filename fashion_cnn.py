@@ -20,11 +20,11 @@ def normalise(images, labels):
 
 def get_model():
     model = tf.keras.Sequential([
-    tf.keras.layers.Conv2D(64, (3,3), padding='same', 
+    tf.keras.layers.Conv2D(32, (3,3), padding='same', 
                            activation=tf.nn.relu, input_shape=(28, 28, 1)),
     tf.keras.layers.MaxPooling2D((3, 3), strides=2),
     tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Conv2D(64, (3,3), padding='same', 
+    tf.keras.layers.Conv2D(32, (3,3), padding='same', 
                            activation=tf.nn.relu),
     tf.keras.layers.Dropout(0.2),
     tf.keras.layers.MaxPooling2D((3, 3), strides=2),
@@ -42,7 +42,7 @@ def get_model():
     return model
 
 
-def train(batch_size=32, epochs=10):
+def train(batch_size=32, epochs=15):
     train_dataset, test_dataset, metadata = get_data()
     num_train_examples = metadata.splits['train'].num_examples
     train_dataset = (train_dataset
@@ -72,7 +72,7 @@ def train(batch_size=32, epochs=10):
 
 def evaluate_model(steps, test_dataset):
     acc = model.evaluate(test_dataset, steps=steps)
-    print('Accuracy:', acc)
+    print('Accuracy: ', acc)
 
     
 def compute():
