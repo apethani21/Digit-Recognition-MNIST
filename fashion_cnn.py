@@ -38,6 +38,7 @@ def get_model():
     model.compile(optimizer='adam',
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
+    print(model.summary())
     return model
 
 
@@ -53,10 +54,18 @@ def train(batch_size=32, epochs=10):
                     .map(normalise)
                     .batch(batch_size))
     print("Data prepared")
+    model_checkpoint = (tf
+                        .keras
+                        .callbacks
+                        .ModelCheckpoint('./config/fashion_cnn.h5', verbose=True)
+    )
     global model
     model = get_model()
     steps = int((num_train_examples/batch_size) + 1)
-    history = model.fit(x=train_dataset, epochs=epochs, steps_per_epoch=steps)
+    history = model.fit(x=train_dataset,
+                        epochs=epochs,
+                        steps_per_epoch=steps,
+                        callbacks = [model_checkpoint])
     model.save('./config/fashion_cnn.h5')
     return history, steps, test_dataset
 
@@ -71,6 +80,7 @@ def compute():
     with open('./config/history', 'wb') as f:
         pickle.dump(history.history, f)
     evaluate_model(steps, test_dataset)
+
 
 if __name__ == "__main__":
     logger = tf.get_logger()
