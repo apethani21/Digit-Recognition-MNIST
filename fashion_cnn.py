@@ -71,4 +71,4 @@ if __name__ == "__main__":
     path_to_save = f'./.models/{model_name}/{model_name}.h5'
     logger = tf.get_logger()
     logger.setLevel(logging.ERROR)
-    compute(model_name, batch_size=64, epochs=1)
+    compute(model_name, batch_size=64, epochs=15)
