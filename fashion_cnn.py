@@ -1,3 +1,4 @@
+import os
 import sys
 import pickle
 import logging
@@ -36,15 +37,15 @@ def train(model_name, batch_size=32, epochs=15):
     model_checkpoint = (tf
                         .keras
                         .callbacks
-                        .ModelCheckpoint('./config/fashion_cnn.h5',
+                        .ModelCheckpoint(path_to_save,
                                          verbose=True))
     steps = int((num_train_examples/batch_size) + 1)
     history = model.fit(x=train_dataset,
                         epochs=epochs,
                         steps_per_epoch=steps,
                         callbacks=[model_checkpoint])
-    model.save('./config/fashion_cnn.h5')
-    return history, steps, test_dataset
+    model.save(path_to_save)
+    return model, history, steps, test_dataset
 
 
 def evaluate_model(model, steps, test_dataset):
@@ -52,11 +53,12 @@ def evaluate_model(model, steps, test_dataset):
     print('Accuracy: ', acc)
 
 
-def compute(model, *args):
-    (history,
+def compute(model_name, batch_size=64, epochs=10):
+    (model,
+     history,
      steps,
-     test_dataset) = train(model, batch_size=64, epochs=10, *args)
-    with open('./config/history', 'wb') as f:
+     test_dataset) = train(model_name, batch_size, epochs)
+    with open(f'./.models/{model_name}/history', 'wb') as f:
         pickle.dump(history.history, f)
     evaluate_model(model, steps, test_dataset)
 
@@ -64,6 +66,9 @@ def compute(model, *args):
 if __name__ == "__main__":
     arg = sys.argv[1]
     model_name = arg.split('=')[-1]
+    print(f"model name: {model_name}")
+    os.makedirs(f'./.models/{model_name}', exist_ok=True)
+    path_to_save = f'./.models/{model_name}/{model_name}.h5'
     logger = tf.get_logger()
     logger.setLevel(logging.ERROR)
-    compute(model_name)
+    compute(model_name, batch_size=64, epochs=1)
