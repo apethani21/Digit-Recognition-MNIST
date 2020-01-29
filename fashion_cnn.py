@@ -17,27 +17,11 @@ class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
 
 
-def plot_to_image(figure):
-    """Converts the matplotlib plot specified by 'figure' to a PNG image and
-    returns it. The supplied figure is closed and inaccessible after this call."""
-    # Save the plot to a PNG in memory.
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    plt.close(figure)
-    buf.seek(0)
-    # Convert PNG buffer to TF image
-    image = tf.image.decode_png(buf.getvalue(), channels=4)
-    # Add the batch dimension
-    image = tf.expand_dims(image, 0)
-    return image
-
-
 def get_data():
     dataset, metadata = tfds.load('fashion_mnist',
                                   as_supervised=True,
                                   with_info=True)
     train_dataset, test_dataset = dataset['train'], dataset['test']
-    print(test_dataset)
     return train_dataset, test_dataset, metadata
 
 
@@ -45,22 +29,6 @@ def normalise(images, labels):
     images = tf.cast(images, tf.float32)
     images /= 255
     return images, labels
-
-
-def log_confusion_matrix_higher_order(epoch,
-                                      logs,
-                                      log_dir,
-                                      model,
-                                      test_dataset,
-                                      test_labels):
-    file_writer_cm = tf.summary.create_file_writer(log_dir + '/cm')
-    test_pred_raw = model.predict(test_dataset)
-    test_pred = np.argmax(test_pred_raw, axis=1)
-    cm = confusion_matrix(test_labels, test_pred)
-    figure = plot_confusion_matrix(model, cm, test_dataset, labels=class_names)
-    cm_image = plot_to_image(figure)
-    with file_writer_cm.as_default():
-        tf.summary.image("Confusion Matrix", cm_image, step=epoch)
 
 
 def train(model_name, batch_size=32, epochs=15):
@@ -89,22 +57,12 @@ def train(model_name, batch_size=32, epochs=15):
                             .callbacks
                             .TensorBoard(log_dir=log_dir + '/fit',
                                          histogram_freq=1))
-    log_confusion_matrix = partial(log_confusion_matrix_higher_order, 
-                                   log_dir=log_dir,
-                                   model=model,
-                                   test_dataset=test_dataset,
-                                   test_labels=test_labels) #! GET test_labels
-    cm_callback = (tf
-                   .keras
-                   .callbacks
-                   .LambdaCallback(on_epoch_end=log_confusion_matrix))
     steps = int((num_train_examples/batch_size) + 1)
     history = model.fit(x=train_dataset,
                         epochs=epochs,
                         steps_per_epoch=steps,
                         callbacks=[model_checkpoint,
-                                   tensorboard_callback,
-                                   cm_callback])
+                                   tensorboard_callback])
     model.save(path_to_save)
     return model, history, steps, test_dataset
 
