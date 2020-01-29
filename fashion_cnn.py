@@ -46,6 +46,7 @@ def train(model_name, batch_size=32, epochs=15):
                     .map(normalise)
                     .batch(batch_size))
     print("Data prepared")
+    path_to_save = f'./.models/{model_name}/{model_name}.h5'
     model_checkpoint = (tf
                         .keras
                         .callbacks
@@ -87,7 +88,6 @@ def main():
     model_name = arg.split('=')[-1]
     print(f"model name: {model_name}")
     os.makedirs(f'./.models/{model_name}', exist_ok=True)
-    path_to_save = f'./.models/{model_name}/{model_name}.h5'
     compute(model_name, batch_size=64, epochs=15)
 
 
