@@ -10,7 +10,8 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 
-
+logger = tf.get_logger()
+logger.setLevel(logging.INFO)
 tf.random.set_seed(1)
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 
                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
@@ -36,6 +37,7 @@ def get_data():
                                   as_supervised=True,
                                   with_info=True)
     train_dataset, test_dataset = dataset['train'], dataset['test']
+    print(test_dataset)
     return train_dataset, test_dataset, metadata
 
 
@@ -122,12 +124,14 @@ def compute(model_name, batch_size=64, epochs=10):
     evaluate_model(model, steps, test_dataset)
 
 
-if __name__ == "__main__":
+def main():
     arg = sys.argv[1]
     model_name = arg.split('=')[-1]
     print(f"model name: {model_name}")
     os.makedirs(f'./.models/{model_name}', exist_ok=True)
     path_to_save = f'./.models/{model_name}/{model_name}.h5'
-    logger = tf.get_logger()
-    logger.setLevel(logging.ERROR)
     compute(model_name, batch_size=64, epochs=15)
+
+
+if __name__ == "__main__":
+    main()
